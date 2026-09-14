@@ -1,6 +1,5 @@
 from datetime import datetime
 from pathlib import Path
-import sys
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -54,6 +53,11 @@ EXPECTED_SILVER_COLUMNS = {
 
 
 def count_true(mask) -> int:
+    """
+    Conta quantos valores True existem em uma expressão
+    booleana do PyArrow.
+    """
+
     result = pc.sum(
         pc.cast(mask, "int64")
     ).as_py()
@@ -61,46 +65,64 @@ def count_true(mask) -> int:
     return int(result or 0)
 
 
-def validate_silver() -> None:
+def get_row_count(
+    file_path: Path,
+    required: bool = True,
+) -> int:
+    """
+    Retorna a quantidade de linhas de um Parquet.
 
-    for file_path in [
-        RAW_FILE,
-        SILVER_FILE,
-        QUARANTINE_FILE,
-    ]:
-        if not file_path.exists():
+    Para arquivos opcionais, como quarantine, a ausência
+    representa zero registros e não uma falha.
+    """
+
+    if not file_path.exists():
+
+        if required:
             raise FileNotFoundError(
                 f"Arquivo não encontrado: {file_path}"
             )
 
-    raw_metadata = pq.ParquetFile(
-        RAW_FILE
-    ).metadata
+        return 0
 
-    silver_metadata = pq.ParquetFile(
-        SILVER_FILE
-    ).metadata
+    return pq.ParquetFile(
+        file_path
+    ).metadata.num_rows
 
-    quarantine_metadata = pq.ParquetFile(
-        QUARANTINE_FILE
-    ).metadata
 
-    raw_count = raw_metadata.num_rows
-    silver_count = silver_metadata.num_rows
-    quarantine_count = quarantine_metadata.num_rows
+def validate_silver() -> bool:
+    """
+    Valida o contrato da camada Silver.
+
+    Verifica:
+    - reconciliação entre RAW, Silver e quarantine;
+    - presença das colunas obrigatórias;
+    - consistência temporal;
+    - registros fora do mês esperado.
+    """
 
     print("\n=== SILVER VALIDATION ===\n")
 
     # ---------------------------------------------------------
-    # Reconciliação
+    # 1. Reconciliação
     # ---------------------------------------------------------
 
-    reconciled = (
-        silver_count + quarantine_count
+    raw_count = get_row_count(
+        RAW_FILE
+    )
+
+    silver_count = get_row_count(
+        SILVER_FILE
+    )
+
+    quarantine_count = get_row_count(
+        QUARANTINE_FILE,
+        required=False,
     )
 
     reconciliation_ok = (
-        raw_count == reconciled
+        raw_count
+        == silver_count + quarantine_count
     )
 
     print(
@@ -112,7 +134,7 @@ def validate_silver() -> None:
     )
 
     # ---------------------------------------------------------
-    # Schema Silver
+    # 2. Schema
     # ---------------------------------------------------------
 
     silver_schema = pq.ParquetFile(
@@ -128,7 +150,9 @@ def validate_silver() -> None:
         - actual_columns
     )
 
-    schema_ok = len(missing_columns) == 0
+    schema_ok = (
+        len(missing_columns) == 0
+    )
 
     print(
         f"[{'PASS' if schema_ok else 'FAIL'}] "
@@ -137,7 +161,7 @@ def validate_silver() -> None:
     )
 
     # ---------------------------------------------------------
-    # Regras que a Silver prometeu cumprir
+    # 3. Ler somente as colunas necessárias
     # ---------------------------------------------------------
 
     silver = pq.read_table(
@@ -156,6 +180,10 @@ def validate_silver() -> None:
         "tpep_dropoff_datetime"
     ]
 
+    # ---------------------------------------------------------
+    # 4. Dropoff não pode acontecer antes do pickup
+    # ---------------------------------------------------------
+
     invalid_duration = count_true(
         pc.less(
             dropoff,
@@ -172,6 +200,10 @@ def validate_silver() -> None:
         f"dropoff_before_pickup "
         f"observado={invalid_duration:,}"
     )
+
+    # ---------------------------------------------------------
+    # 5. Pickup precisa pertencer à partição mensal
+    # ---------------------------------------------------------
 
     pickup_outside_month = count_true(
         pc.or_(
@@ -214,12 +246,19 @@ def validate_silver() -> None:
             "SILVER VALIDATION: FAILED"
         )
 
-        sys.exit(1)
+        return False
 
     print(
         "SILVER VALIDATION: PASSED"
     )
 
+    return True
+
 
 if __name__ == "__main__":
-    validate_silver()
+
+    success = validate_silver()
+
+    raise SystemExit(
+        0 if success else 1
+    )

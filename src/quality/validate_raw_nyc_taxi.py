@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-import sys
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -99,7 +98,7 @@ def print_results(results: list[CheckResult]) -> None:
             )
 
 
-def validate_dataset(file_path: Path) -> None:
+def validate_dataset(file_path: Path) -> bool:
 
     if not file_path.exists():
         raise FileNotFoundError(
@@ -139,6 +138,7 @@ def validate_dataset(file_path: Path) -> None:
     if missing_columns:
         print_results(results)
         sys.exit(1)
+
 
     # ---------------------------------------------------------
     # 2. Ler somente as colunas necessárias
@@ -352,17 +352,22 @@ def validate_dataset(file_path: Path) -> None:
 
     if blocking_failures:
         print(
-            f"DATA QUALITY: FAILED "
+            f"RAW VALIDATION: FAILED "
             f"({len(blocking_failures)} "
             f"regra(s) bloqueante(s))"
         )
 
-        sys.exit(1)
+        return False
 
     print(
-        "DATA QUALITY: PASSED"
+        "RAW VALIDATION: PASSED"
     )
 
+    return True
 
 if __name__ == "__main__":
-    validate_dataset(DATA_FILE)
+    success = validate_dataset(DATA_FILE)
+
+    raise SystemExit(
+        0 if success else 1
+    )

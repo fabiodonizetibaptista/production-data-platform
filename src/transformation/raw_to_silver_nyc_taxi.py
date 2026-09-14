@@ -89,7 +89,9 @@ def write_parquet_atomically(
     temp_file.replace(destination)
 
 
-def transform_raw_to_silver() -> None:
+def transform_raw_to_silver(
+    run_id: str | None = None,
+) -> None:
     """
     Processa NYC Yellow Taxi da RAW para Silver.
 
@@ -100,7 +102,9 @@ def transform_raw_to_silver() -> None:
     auditoria para cada execução.
     """
 
-    run_id = create_run_id()
+    if run_id is None:
+        run_id = create_run_id()
+
     started_at = utc_now()
 
     raw_count = None
