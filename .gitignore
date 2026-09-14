@@ -8,3 +8,8 @@ data/processed/*
 
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+
+data/silver/*
+!data/silver/.gitkeep
+data/quarantine/*
+!data/quarantine/.gitkeep
