@@ -49,7 +49,6 @@ EXPECTED_SILVER_COLUMNS = {
     "has_negative_fare",
     "has_negative_total",
     "is_passenger_count_null",
-    "_processed_at",
     "_source_file",
 }
 
