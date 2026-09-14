@@ -13,3 +13,8 @@ data/silver/*
 !data/silver/.gitkeep
 data/quarantine/*
 !data/quarantine/.gitkeep
+
+logs/*
+!logs/.gitkeep
+data/audit/*
+!data/audit/.gitkeep
