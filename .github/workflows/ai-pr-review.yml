@@ -1,0 +1,12 @@
+name: AI PR Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  ai-review:
+    uses: fabiodonizetibaptista/ai-data-engineering-pr-reviewer/.github/workflows/ai-review.yml@main
