@@ -7,6 +7,10 @@ on:
       - synchronize
       - reopened
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   ai-review:
     uses: fabiodonizetibaptista/ai-data-engineering-pr-reviewer/.github/workflows/ai-review.yml@main
