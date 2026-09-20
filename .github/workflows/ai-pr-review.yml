@@ -10,3 +10,5 @@ on:
 jobs:
   ai-review:
     uses: fabiodonizetibaptista/ai-data-engineering-pr-reviewer/.github/workflows/ai-review.yml@main
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
