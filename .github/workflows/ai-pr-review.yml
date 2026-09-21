@@ -16,3 +16,4 @@ jobs:
     uses: fabiodonizetibaptista/ai-data-engineering-pr-reviewer/.github/workflows/ai-review.yml@main
     secrets:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
