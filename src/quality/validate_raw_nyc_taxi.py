@@ -137,7 +137,7 @@ def validate_dataset(file_path: Path) -> bool:
     # as regras que dependem dessas colunas.
     if missing_columns:
         print_results(results)
-        sys.exit(1)
+        return False
 
 
     # ---------------------------------------------------------
