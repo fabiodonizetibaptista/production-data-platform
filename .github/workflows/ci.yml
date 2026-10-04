@@ -137,6 +137,10 @@ jobs:
         run: |
           python tests/fixtures/create_dbt_silver_fixture.py
 
+      - name: Prepare dbt runtime directories
+        run: |
+          mkdir -p data/warehouse
+
       - name: Build dbt image
         run: |
           docker build \
