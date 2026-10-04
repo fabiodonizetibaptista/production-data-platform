@@ -110,3 +110,46 @@ jobs:
             --cov-report=term-missing \
             --cov-fail-under=85 \
             -q
+
+  dbt-build:
+    name: dbt Build
+    runs-on: ubuntu-latest
+    needs:
+      - integration-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install fixture dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Create synthetic Silver fixture
+        run: |
+          python tests/fixtures/create_dbt_silver_fixture.py
+
+      - name: Build dbt image
+        run: |
+          docker build \
+            -f docker/dbt/Dockerfile \
+            -t production-data-platform-dbt \
+            .
+
+      - name: Run dbt build
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -e HOME=/tmp \
+            -v "$PWD:/workspace" \
+            -w /workspace/dbt \
+            production-data-platform-dbt \
+            build --profiles-dir /workspace/dbt

@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: stg_yellow_taxi
+    description: >
+      Interface dbt sobre a camada Silver de viagens Yellow Taxi.
+
+    columns:
+      - name: pickup_at
+        description: Data e hora de início da viagem.
+        data_tests:
+          - not_null
+
+      - name: dropoff_at
+        description: Data e hora de término da viagem.
+        data_tests:
+          - not_null
+
+      - name: _source_file
+        description: Arquivo Silver de origem do registro.
+        data_tests:
+          - not_null

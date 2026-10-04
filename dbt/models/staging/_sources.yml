@@ -1,0 +1,19 @@
+version: 2
+
+sources:
+  - name: silver
+    description: >
+      Camada Silver produzida pela pipeline Python/PyArrow do NYC Taxi.
+
+    tables:
+      - name: yellow_taxi
+        description: >
+          Viagens Yellow Taxi já submetidas às regras técnicas
+          de qualidade e segregação de quarantine.
+
+        config:
+          external_location: >
+            read_parquet(
+              '/workspace/data/silver/yellow_taxi/year=*/month=*/*.parquet',
+              hive_partitioning=true
+            )

@@ -19,3 +19,11 @@ logs/*
 data/audit/*
 !data/audit/.gitkeep
 .coverage
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Local analytical warehouse
+data/warehouse/
