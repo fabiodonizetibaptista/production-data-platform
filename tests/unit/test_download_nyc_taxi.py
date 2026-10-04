@@ -1,3 +1,5 @@
+import io
+
 import pytest
 
 pytestmark = pytest.mark.unit
@@ -80,7 +82,6 @@ def test_download_file_skips_download_when_valid_raw_already_exists(
     assert not temp_file.exists()
 
 
-import io
 
 
 class FakeHttpResponse:

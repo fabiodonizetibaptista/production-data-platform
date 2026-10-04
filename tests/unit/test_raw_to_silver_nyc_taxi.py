@@ -185,13 +185,10 @@ def test_transform_raw_to_silver_fails_when_raw_does_not_exist(
         audit_records.append,
     )
 
-    try:
+    with pytest.raises(FileNotFoundError):
         transformation.transform_raw_to_silver(
             run_id="test-run-missing-raw",
         )
-        assert False, "Era esperado FileNotFoundError"
-    except FileNotFoundError:
-        pass
 
     assert len(audit_records) == 1
     assert audit_records[0]["status"] == "FAILED"
