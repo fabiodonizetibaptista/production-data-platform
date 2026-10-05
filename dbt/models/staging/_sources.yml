@@ -14,6 +14,6 @@ sources:
         config:
           external_location: >
             read_parquet(
-              '/workspace/data/silver/yellow_taxi/year=*/month=*/*.parquet',
+              '{{ env_var("DATA_DIR", "/workspace/data") }}/silver/yellow_taxi/year=*/month=*/*.parquet',
               hive_partitioning=true
             )

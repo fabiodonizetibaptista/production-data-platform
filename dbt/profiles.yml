@@ -4,6 +4,6 @@ nyc_taxi_analytics:
   outputs:
     dev:
       type: duckdb
-      path: /workspace/data/warehouse/analytics.duckdb
+      path: "{{ env_var('DATA_DIR', '/workspace/data') }}/warehouse/analytics.duckdb"
       schema: analytics
       threads: 2
