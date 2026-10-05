@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: mart_daily_taxi_metrics
+    description: >
+      Métricas diárias das viagens Yellow Taxi.
+      O grão do modelo é uma linha por data de pickup.
+
+    columns:
+      - name: pickup_date
+        description: Data de início das viagens agregadas.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: trip_count
+        description: Quantidade total de viagens iniciadas no dia.
+        data_tests:
+          - not_null
+
+      - name: total_distance_miles
+        description: Distância total percorrida pelas viagens do dia.
+
+      - name: average_trip_duration_minutes
+        description: Duração média das viagens em minutos.
+
+      - name: total_amount
+        description: Valor total registrado nas viagens do dia.

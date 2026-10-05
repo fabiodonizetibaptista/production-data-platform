@@ -1,0 +1,9 @@
+nyc_taxi_analytics:
+  target: dev
+
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DATA_DIR', '/workspace/data') }}/warehouse/analytics.duckdb"
+      schema: analytics
+      threads: 2
