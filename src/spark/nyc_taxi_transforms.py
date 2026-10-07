@@ -69,18 +69,38 @@ def transform_silver(
             "period_start deve ser anterior a period_end."
         )
 
+    # Timestamps são campos estruturais da viagem. Ausência de pickup ou
+    # dropoff impede validar período e duração de forma confiável.
+    missing_pickup_datetime = F.col("tpep_pickup_datetime").isNull()
+    missing_dropoff_datetime = F.col("tpep_dropoff_datetime").isNull()
+
     pickup_outside_period = (
-        (F.col("tpep_pickup_datetime") < F.lit(period_start))
-        | (F.col("tpep_pickup_datetime") >= F.lit(period_end))
+        (~missing_pickup_datetime)
+        & (
+            (F.col("tpep_pickup_datetime") < F.lit(period_start))
+            | (F.col("tpep_pickup_datetime") >= F.lit(period_end))
+        )
     )
 
     dropoff_before_pickup = (
-        F.col("tpep_dropoff_datetime")
-        < F.col("tpep_pickup_datetime")
+        (~missing_pickup_datetime)
+        & (~missing_dropoff_datetime)
+        & (
+            F.col("tpep_dropoff_datetime")
+            < F.col("tpep_pickup_datetime")
+        )
     )
 
     prepared_df = (
         bronze_df
+        .withColumn(
+            "_is_missing_pickup_datetime",
+            missing_pickup_datetime,
+        )
+        .withColumn(
+            "_is_missing_dropoff_datetime",
+            missing_dropoff_datetime,
+        )
         .withColumn(
             "_is_pickup_outside_period",
             F.coalesce(
@@ -126,17 +146,23 @@ def transform_silver(
     )
 
     quarantine_condition = (
-        F.col("_is_pickup_outside_period")
+        F.col("_is_missing_pickup_datetime")
+        | F.col("_is_missing_dropoff_datetime")
+        | F.col("_is_pickup_outside_period")
         | F.col("_is_dropoff_before_pickup")
     )
+
+    internal_rule_columns = [
+        "_is_missing_pickup_datetime",
+        "_is_missing_dropoff_datetime",
+        "_is_pickup_outside_period",
+        "_is_dropoff_before_pickup",
+    ]
 
     silver_df = (
         prepared_df
         .filter(~quarantine_condition)
-        .drop(
-            "_is_pickup_outside_period",
-            "_is_dropoff_before_pickup",
-        )
+        .drop(*internal_rule_columns)
     )
 
     quarantine_df = (
@@ -147,6 +173,14 @@ def transform_silver(
             F.concat_ws(
                 ";",
                 F.when(
+                    F.col("_is_missing_pickup_datetime"),
+                    F.lit("missing_pickup_datetime"),
+                ),
+                F.when(
+                    F.col("_is_missing_dropoff_datetime"),
+                    F.lit("missing_dropoff_datetime"),
+                ),
+                F.when(
                     F.col("_is_pickup_outside_period"),
                     F.lit("pickup_outside_period"),
                 ),
@@ -156,6 +190,7 @@ def transform_silver(
                 ),
             ),
         )
+        .drop(*internal_rule_columns)
     )
 
     return (

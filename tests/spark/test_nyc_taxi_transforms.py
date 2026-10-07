@@ -203,3 +203,69 @@ def test_transform_silver_rejects_invalid_period(spark):
             period_start=datetime(2026, 2, 1),
             period_end=datetime(2026, 1, 1),
         )
+
+
+def test_transform_silver_quarantines_missing_timestamps(spark):
+    rows = [
+        (
+            1,
+            None,
+            datetime(2026, 1, 10, 10, 15, 0),
+            1,
+            3.5,
+            15.0,
+            18.0,
+            "yellow_tripdata_2026-01.parquet",
+        ),
+        (
+            1,
+            datetime(2026, 1, 10, 10, 0, 0),
+            None,
+            1,
+            3.5,
+            15.0,
+            18.0,
+            "yellow_tripdata_2026-01.parquet",
+        ),
+    ]
+
+    bronze = spark.createDataFrame(rows, schema=SCHEMA)
+
+    silver, quarantine = transform_silver(
+        bronze,
+        period_start=datetime(2026, 1, 1),
+        period_end=datetime(2026, 2, 1),
+    )
+
+    reasons = {
+        row["_quarantine_reason"]
+        for row in quarantine.select("_quarantine_reason").collect()
+    }
+
+    assert silver.count() == 0
+    assert quarantine.count() == 2
+    assert reasons == {
+        "missing_pickup_datetime",
+        "missing_dropoff_datetime",
+    }
+
+
+def test_transform_silver_does_not_expose_internal_rule_columns(spark):
+    bronze = _create_source_df(spark)
+
+    silver, quarantine = transform_silver(
+        bronze,
+        period_start=datetime(2026, 1, 1),
+        period_end=datetime(2026, 2, 1),
+    )
+
+    internal_columns = {
+        "_is_missing_pickup_datetime",
+        "_is_missing_dropoff_datetime",
+        "_is_pickup_outside_period",
+        "_is_dropoff_before_pickup",
+    }
+
+    assert internal_columns.isdisjoint(silver.columns)
+    assert internal_columns.isdisjoint(quarantine.columns)
+    assert "_quarantine_reason" in quarantine.columns
