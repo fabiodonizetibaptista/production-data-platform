@@ -28,3 +28,4 @@ dbt/dbt_packages/
 # Local analytical warehouse
 data/warehouse/
 dbt/.user.yml
+.venv-spark/

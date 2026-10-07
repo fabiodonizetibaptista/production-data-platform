@@ -46,7 +46,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          python -m pytest -m unit -q
+          python -m pytest tests/unit -m unit -q
 
   integration-tests:
     name: Integration Tests
@@ -72,7 +72,44 @@ jobs:
 
       - name: Run integration tests
         run: |
-          python -m pytest -m integration -q
+          python -m pytest tests/integration -m integration -q
+
+  spark-tests:
+    name: Spark Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+            requirements-spark-dev.txt
+
+      - name: Install Spark test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-spark-dev.txt
+
+      - name: Run Spark tests
+        run: |
+          python -m pytest tests/spark \
+            --cov=src/spark \
+            --cov-report=term-missing \
+            --cov-fail-under=85 \
+            -q
 
   coverage-gate:
     name: Coverage Gate
@@ -102,6 +139,8 @@ jobs:
       - name: Run production coverage gate
         run: |
           python -m pytest \
+            tests/unit \
+            tests/integration \
             --cov=src/common \
             --cov=src/ingestion \
             --cov=src/pipeline \
