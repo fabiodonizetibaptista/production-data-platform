@@ -35,7 +35,23 @@ def add_bronze_lineage(
 
 
 def _lowercase_columns(df: DataFrame) -> DataFrame:
-    """Padroniza os nomes das colunas sem alterar seus valores."""
+    """Padroniza os nomes das colunas sem criar colisões de schema."""
+
+    normalized_names = [column.lower() for column in df.columns]
+
+    if len(normalized_names) != len(set(normalized_names)):
+        collisions = sorted(
+            {
+                normalized
+                for normalized in normalized_names
+                if normalized_names.count(normalized) > 1
+            }
+        )
+
+        raise ValueError(
+            "A normalização para lowercase criaria colunas duplicadas: "
+            + ", ".join(collisions)
+        )
 
     return df.select(
         *[

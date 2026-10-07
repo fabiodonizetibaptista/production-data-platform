@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from pyspark.sql import functions as F
 from pyspark.sql.types import (
     DoubleType,
     IntegerType,
@@ -269,3 +270,32 @@ def test_transform_silver_does_not_expose_internal_rule_columns(spark):
     assert internal_columns.isdisjoint(silver.columns)
     assert internal_columns.isdisjoint(quarantine.columns)
     assert "_quarantine_reason" in quarantine.columns
+
+
+def test_transform_silver_rejects_case_insensitive_column_collisions(spark):
+    # select permite criar explicitamente duas colunas que diferem
+    # apenas por capitalização. withColumn não serve para este teste
+    # porque a resolução padrão do Spark é case-insensitive e substituiria
+    # VendorID ao adicionar vendorid.
+    bronze = (
+        _create_source_df(spark)
+        .select(
+            "*",
+            F.lit(999).alias("vendorid"),
+        )
+    )
+
+    # Garante que o próprio fixture realmente representa a colisão
+    # que queremos testar.
+    assert "VendorID" in bronze.columns
+    assert "vendorid" in bronze.columns
+
+    with pytest.raises(
+        ValueError,
+        match="colunas duplicadas: vendorid",
+    ):
+        transform_silver(
+            bronze,
+            period_start=datetime(2026, 1, 1),
+            period_end=datetime(2026, 2, 1),
+        )
