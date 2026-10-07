@@ -133,14 +133,13 @@ def transform_silver(
         )
         .withColumn(
             "trip_duration_minutes",
-            F.expr(
-                """
-                timestampdiff(
-                    SECOND,
-                    tpep_pickup_datetime,
-                    tpep_dropoff_datetime
-                ) / 60.0
-                """
+            (
+                F.timestamp_diff(
+                    "SECOND",
+                    F.col("tpep_pickup_datetime"),
+                    F.col("tpep_dropoff_datetime"),
+                )
+                / F.lit(60.0)
             ),
         )
         .withColumn(
