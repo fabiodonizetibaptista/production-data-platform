@@ -153,23 +153,6 @@
               "encodings": {
                 "value": {
                   "fieldName": "sum(total_amount)",
-                  "style": {
-                    "fontSize": 28,
-                    "rules": [
-                      {
-                        "condition": {
-                          "operator": ">="
-                        },
-                        "color": "#00A972"
-                      },
-                      {
-                        "condition": {
-                          "operator": ">="
-                        },
-                        "color": "#00A972"
-                      }
-                    ]
-                  },
                   "format": {
                     "type": "number-currency",
                     "currencyCode": "USD",
@@ -177,9 +160,6 @@
                     "decimalPlaces": {
                       "type": "max",
                       "places": 2
-                    },
-                    "significantFigures": {
-                      "type": "all"
                     }
                   }
                 }
@@ -259,8 +239,8 @@
                   "datasetName": "1c1a017e",
                   "fields": [
                     {
-                      "name": "avg(average_amount_per_trip)",
-                      "expression": "AVG(`average_amount_per_trip`)"
+                      "name": "max(average_amount_per_trip)",
+                      "expression": "MAX(`average_amount_per_trip`)"
                     }
                   ],
                   "disaggregated": false
@@ -279,7 +259,7 @@
               "widgetType": "counter",
               "encodings": {
                 "value": {
-                  "fieldName": "avg(average_amount_per_trip)",
+                  "fieldName": "max(average_amount_per_trip)",
                   "format": {
                     "type": "number-currency",
                     "currencyCode": "USD",
