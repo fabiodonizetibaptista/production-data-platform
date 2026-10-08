@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: mart_monthly_taxi_kpis
+    description: >
+      KPIs executivos mensais do NYC Yellow Taxi.
+      O grão é uma linha por mês de pickup.
+
+    columns:
+      - name: pickup_month
+        description: Primeiro dia do mês representado pelo registro.
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_trips
+        description: Quantidade total de viagens iniciadas no mês.
+        data_tests:
+          - not_null
+
+      - name: total_amount
+        description: Valor total registrado nas viagens do mês.
+
+      - name: total_distance_miles
+        description: Distância total percorrida no mês, em milhas.
+
+      - name: average_amount_per_trip
+        description: >
+          Valor médio por viagem no mês, calculado como
+          total_amount dividido por total_trips.

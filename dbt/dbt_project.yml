@@ -14,10 +14,10 @@ clean-targets:
 models:
   nyc_taxi_analytics:
     staging:
-      +materialized: view
+      +materialized: "{{ 'ephemeral' if target.type == 'databricks' else 'view' }}"
 
     intermediate:
-      +materialized: view
+      +materialized: "{{ 'ephemeral' if target.type == 'databricks' else 'view' }}"
 
     marts:
       +materialized: table

@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: mart_data_quality_summary
+    description: >
+      Resumo mensal das principais ocorrências de qualidade
+      identificadas nas viagens NYC Yellow Taxi.
+      O grão é uma linha por mês e tipo de ocorrência.
+
+    columns:
+      - name: pickup_month
+        description: Primeiro dia do mês representado pelo registro.
+        data_tests:
+          - not_null
+
+      - name: quality_issue
+        description: Categoria da ocorrência de qualidade.
+        data_tests:
+          - not_null
+
+      - name: sort_order
+        description: Ordem recomendada de apresentação no BI.
+
+      - name: issue_count
+        description: Quantidade de registros associados à ocorrência.
+        data_tests:
+          - not_null

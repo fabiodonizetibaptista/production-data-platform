@@ -29,3 +29,9 @@ dbt/dbt_packages/
 data/warehouse/
 dbt/.user.yml
 .venv-spark/
+
+# Databricks CLI local sync state
+.databricks/
+
+# dbt local user metadata
+.user.yml

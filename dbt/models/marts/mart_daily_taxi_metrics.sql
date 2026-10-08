@@ -26,6 +26,15 @@ daily as (
 
         sum(total_amount) as total_amount,
 
+        cast(
+            case
+                when count(*) > 0
+                then sum(total_amount) / count(*)
+                else null
+            end
+            as double
+        ) as average_amount_per_trip,
+
         sum(
             case when is_zero_distance then 1 else 0 end
         ) as zero_distance_trip_count,
