@@ -1,15 +1,15 @@
 version: 2
 
 sources:
-  - name: silver
+  - name: silver_local
     description: >
-      Camada Silver produzida pela pipeline Python/PyArrow do NYC Taxi.
+      Camada Silver local produzida pela pipeline Python/PyArrow.
 
     tables:
       - name: yellow_taxi
         description: >
-          Viagens Yellow Taxi já submetidas às regras técnicas
-          de qualidade e segregação de quarantine.
+          Viagens Yellow Taxi validadas e segregadas da quarantine
+          pela implementação local.
 
         config:
           external_location: >
@@ -17,3 +17,18 @@ sources:
               '{{ env_var("DATA_DIR", "/workspace/data") }}/silver/yellow_taxi/year=*/month=*/*.parquet',
               hive_partitioning=true
             )
+
+  - name: silver_databricks
+    description: >
+      Camada Silver Delta produzida pela pipeline PySpark
+      e governada pelo Unity Catalog.
+
+    database: "{{ env_var('DATABRICKS_CATALOG', 'workspace') }}"
+    schema: "{{ env_var('DATABRICKS_SILVER_SCHEMA', 'nyc_taxi_silver') }}"
+
+    tables:
+      - name: yellow_taxi
+        identifier: yellow_taxi_trips
+        description: >
+          Viagens Yellow Taxi válidas armazenadas como Delta Table
+          na camada Silver do Lakehouse.

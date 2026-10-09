@@ -1,7 +1,16 @@
 with source as (
 
+    {% if target.type == 'databricks' %}
+
     select *
-    from {{ source('silver', 'yellow_taxi') }}
+    from {{ source('silver_databricks', 'yellow_taxi') }}
+
+    {% else %}
+
+    select *
+    from {{ source('silver_local', 'yellow_taxi') }}
+
+    {% endif %}
 
 ),
 
